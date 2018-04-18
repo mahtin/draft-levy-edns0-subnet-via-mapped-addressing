@@ -59,7 +59,18 @@ The resolver then send this new IPv6 address within the ADDRESS field of an exis
      </t>
 
      <t>
-No new EDNS0 record type is created.
+The goal is simple. Never return the IP (or IP block) of the client; but instead map the 
+location (which the resolver calculates from the client IP) into a meta-IP address. 
+Meanwhile, there exists a table that's public (and distributed to geolocation companies 
+and users) which maps this meta-IP to a location.
+     </t>
+
+     <t>
+The 0053::/16 block is requested in order to implement this draft.
+     </t>
+
+     <t>
+No new EDNS0 record type is created. No protocol change is requested.
      </t>
 
    </abstract>
@@ -113,7 +124,7 @@ or some other method.
 
    <section title="Examples">
      <t>
-The ADDRESS field would be mapped from the client's IP address via a geocoded module.
+The ADDRESS field would be mapped from the client's IP address via a geocoded module in the resolver.
      </t>
 
       <figure align="center" anchor="ecs-example-2">
@@ -125,7 +136,9 @@ The ADDRESS field would be mapped from the client's IP address via a geocoded mo
       </figure>
 
      <t>
-The ADDRESS field would be a /56 in order to be compatible with <xref target="RFC7871"/>.
+The FAMILY should be the value for IPv6 (i.e. 2).
+The SOURCE PREFIX-LENGTH should be 56.
+The ADDRESS field would be a /56 address in order to be compatible with <xref target="RFC7871"/>.
      </t>
 
 <texttable align="left" suppress-title="true" anchor="iata.mapping.table">
@@ -183,13 +196,20 @@ Using an IPv6 address (which is not routed and has many bits to play with) is si
 of allowing existing ECS software to continue to operate without new protocols being created (or implemented).
      </t>
 
+     <t>
+If the authorative DNS does not have a geolocatation database for the IPv6 block; then it's no different than
+any new network that shows up on the Internet.
+Resolving this issue is out-of-scope for this draft.
+     </t>
+
    </section>
 
    <section title="Acknowledgements" anchor="Acknowledgements">
      <t>
 This work is based on the privacy needs of the <xref target="Cloudflare1111">Cloudflare's 1.1.1.1 Resolver</xref>
 operated by <xref target="Cloudflare">Cloudflare</xref>.
-In addition, this work was inspired by the work of the <xref target="Google8888">Google Public DNS</xref> service.
+In addition, this work was inspired by the work of the <xref target="Google8888">Google Public DNS</xref> service
+and their struggles with ECS.
      </t>
 
    </section>

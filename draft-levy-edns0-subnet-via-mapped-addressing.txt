@@ -26,7 +26,16 @@ Abstract
    address.  The resolver then send this new IPv6 address within the
    ADDRESS field of an existing ECS record.
 
-   No new EDNS0 record type is created.
+   The goal is simple.  Never return the IP (or IP block) of the client;
+   but instead map the location (which the resolver calculates from the
+   client IP) into a meta-IP address.  Meanwhile, there exists a table
+   that's public (and distributed to geolocation companies and users)
+   which maps this meta-IP to a location.
+
+   The 0053::/16 block is requested in order to implement this draft.
+
+   No new EDNS0 record type is created.  No protocol change is
+   requested.
 
 Status of This Memo
 
@@ -40,6 +49,15 @@ Status of This Memo
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 1]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
@@ -49,14 +67,6 @@ Copyright Notice
 
    Copyright (c) 2018 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
-
-
-
-
-Levy                    Expires October 20, 2018                [Page 1]
-
-Internet-Draft             ECS Mapped Address                 April 2018
-
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
@@ -71,15 +81,15 @@ Internet-Draft             ECS Mapped Address                 April 2018
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   3
    2.  The existing EDNS0 Client Subnet  . . . . . . . . . . . . . .   3
    3.  The masked EDNS0 Client Subnet  . . . . . . . . . . . . . . .   3
    4.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .   3
    5.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   4
    6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
    7.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   4
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   4
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   5
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   5
      8.2.  Informative References  . . . . . . . . . . . . . . . . .   5
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   5
 
@@ -95,6 +105,15 @@ Table of Contents
    Without changing the ECS protcol or it's operational usage, it's
    possible to provide the client far more privacy by mapping the users
    geography to a fresh IP address (an IPv6 address that's not routed
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 2]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
    globally) which is then placed in the ADDRESS field within ann ECS
    message.
 
@@ -105,14 +124,6 @@ Table of Contents
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
-
-
-
-
-Levy                    Expires October 20, 2018                [Page 2]
-
-Internet-Draft             ECS Mapped Address                 April 2018
-
 
 2.  The existing EDNS0 Client Subnet
 
@@ -127,7 +138,7 @@ Internet-Draft             ECS Mapped Address                 April 2018
 4.  Examples
 
    The ADDRESS field would be mapped from the client's IP address via a
-   geocoded module.
+   geocoded module in the resolver.
 
    +------+------+------+------+------+------+
    | 0053 | #### | #### | #### | #### | #### |
@@ -137,8 +148,9 @@ Internet-Draft             ECS Mapped Address                 April 2018
 
                                  Figure 1
 
-   The ADDRESS field would be a /56 in order to be compatible with
-   [RFC7871].
+   The FAMILY should be the value for IPv6 (i.e. 2).  The SOURCE PREFIX-
+   LENGTH should be 56.  The ADDRESS field would be a /56 address in
+   order to be compatible with [RFC7871].
 
    +-----------------------------+------+------------------------------+
    | Client IP                   | IATA | Notes                        |
@@ -150,6 +162,14 @@ Internet-Draft             ECS Mapped Address                 April 2018
    | 71.191.91..###              | BWI  |                              |
    +-----------------------------+------+------------------------------+
 
+
+
+
+Levy                    Expires October 20, 2018                [Page 3]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
    +------+-------------------+-------+
    | IATA | Mapped IP         | Notes |
    +------+-------------------+-------+
@@ -160,26 +180,21 @@ Internet-Draft             ECS Mapped Address                 April 2018
    | WVI  | 53:0000:0000:9900 |       |
    +------+-------------------+-------+
 
-
-
-
-
-
-Levy                    Expires October 20, 2018                [Page 3]
-
-Internet-Draft             ECS Mapped Address                 April 2018
-
-
    Using an IPv6 address (which is not routed and has many bits to play
    with) is simply a way of allowing existing ECS software to continue
    to operate without new protocols being created (or implemented).
+
+   If the authorative DNS does not have a geolocatation database for the
+   IPv6 block; then it's no different than any new network that shows up
+   on the Internet.  Resolving this issue is out-of-scope for this
+   draft.
 
 5.  Acknowledgements
 
    This work is based on the privacy needs of the Cloudflare's 1.1.1.1
    Resolver [Cloudflare1111] operated by Cloudflare [Cloudflare].  In
    addition, this work was inspired by the work of the Google Public DNS
-   [Google8888] service.
+   [Google8888] service and their struggles with ECS.
 
 6.  IANA Considerations
 
@@ -200,6 +215,17 @@ Internet-Draft             ECS Mapped Address                 April 2018
    geography of a source client; however, not the actual client IP or
    their subnet.
 
+
+
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 4]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
 8.  References
 
 8.1.  Normative References
@@ -218,13 +244,6 @@ Internet-Draft             ECS Mapped Address                 April 2018
               Kumari, "Client Subnet in DNS Queries", RFC 7871,
               DOI 10.17487/RFC7871, May 2016, <https://www.rfc-
               editor.org/info/rfc7871>.
-
-
-
-Levy                    Expires October 20, 2018                [Page 4]
-
-Internet-Draft             ECS Mapped Address                 April 2018
-
 
 8.2.  Informative References
 
@@ -250,6 +269,18 @@ Internet-Draft             ECS Mapped Address                 April 2018
               <http://www.unece.org/cefact/locode/welcome.html>.
 
 Author's Address
+
+
+
+
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 5]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
 
    Martin J. Levy
    Cloudflare, Inc.
@@ -277,4 +308,29 @@ Author's Address
 
 
 
-Levy                    Expires October 20, 2018                [Page 5]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 6]

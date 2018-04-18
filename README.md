@@ -19,6 +19,13 @@ a DNS resolver should truncate the clients IP address.
 This proposal allocates an IPv6 block and publishes a geographic mapping
 of the client IP address into a pre-defined IPv6 address within that block.
 
+## Goals
+
+The goal is simple. Never return the IP (or IP block) of the client; but instead map the
+location (which the resolver calculates from the client IP) into a meta-IP address.
+Meanwhile, there exists a table that's public (and distributed to geolocation companies
+and users) which maps this meta-IP to a location.
+
 ## building txt and html files
 
 This is done with the Makefile.

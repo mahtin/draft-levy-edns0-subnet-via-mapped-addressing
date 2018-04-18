@@ -434,7 +434,9 @@
 <p>This document proposes a new optional mapping for the ADDRESS field in an EDNS0 Client Subnet (ECS).  </p>
 <p>Presently <a href="#RFC7871">[RFC7871]</a> simply states: "To protect users' privacy, Recursive Resolvers are strongly encouraged to conceal part of the user's IP address by truncating IPv4 addresses to 24 bits. 56 bits are recommended for IPv6, based on RFC6177." </p>
 <p>This RFC proposes that an IPv6 block is allocated and within that block a fixed mapping is published that maps geography to an IPv6 address.  The resolver then send this new IPv6 address within the ADDRESS field of an existing ECS record.  </p>
-<p>No new EDNS0 record type is created.  </p>
+<p>The goal is simple. Never return the IP (or IP block) of the client; but instead map the location (which the resolver calculates from the client IP) into a meta-IP address.  Meanwhile, there exists a table that's public (and distributed to geolocation companies and users) which maps this meta-IP to a location.  </p>
+<p>The 0053::/16 block is requested in order to implement this draft.  </p>
+<p>No new EDNS0 record type is created. No protocol change is requested.  </p>
 <h1 id="rfc.status">
   <a href="#rfc.status">Status of This Memo</a>
 </h1>
@@ -480,7 +482,7 @@
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#ecs-masked" id="ecs-masked">The masked EDNS0 Client Subnet</a></h1>
 <p id="rfc.section.3.p.1">We propose to ...  blah blah blah ... map IPs based on client.  New IP address is based on geolocation codes (<a href="#UNLOC">UNLOC</a> <cite title="NONE">[UNLOC]</cite>, <a href="#IATA">IATA codes</a> <cite title="NONE">[IATA]</cite>, or some other method.  </p>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> Examples</h1>
-<p id="rfc.section.4.p.1">The ADDRESS field would be mapped from the client's IP address via a geocoded module.  </p>
+<p id="rfc.section.4.p.1">The ADDRESS field would be mapped from the client's IP address via a geocoded module in the resolver.  </p>
 <div id="rfc.figure.1"/>
 <div id="ecs-example-2"/>
 <pre>
@@ -489,7 +491,7 @@
 +------+------+------+------+------+------+ </pre>
 <p>An ADDRESS field created from a fixed geolocation database.</p>
 <p class="figure">Figure 1</p>
-<p id="rfc.section.4.p.2">The ADDRESS field would be a /56 in order to be compatible with <a href="#RFC7871">[RFC7871]</a>.  </p>
+<p id="rfc.section.4.p.2">The FAMILY should be the value for IPv6 (i.e. 2).  The SOURCE PREFIX-LENGTH should be 56.  The ADDRESS field would be a /56 address in order to be compatible with <a href="#RFC7871">[RFC7871]</a>.  </p>
 <div id="rfc.table.1"/>
 <div id="iata.mapping.table"/>
 <table cellpadding="3" cellspacing="0" class="tt full left">
@@ -562,8 +564,9 @@
   </tbody>
 </table>
 <p id="rfc.section.4.p.3">Using an IPv6 address (which is not routed and has many bits to play with) is simply a way of allowing existing ECS software to continue to operate without new protocols being created (or implemented).  </p>
+<p id="rfc.section.4.p.4">If the authorative DNS does not have a geolocatation database for the IPv6 block; then it's no different than any new network that shows up on the Internet.  Resolving this issue is out-of-scope for this draft.  </p>
 <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#Acknowledgements" id="Acknowledgements">Acknowledgements</a></h1>
-<p id="rfc.section.5.p.1">This work is based on the privacy needs of the <a href="#Cloudflare1111">Cloudflare's 1.1.1.1 Resolver</a> <cite title="NONE">[Cloudflare1111]</cite> operated by <a href="#Cloudflare">Cloudflare</a> <cite title="NONE">[Cloudflare]</cite>.  In addition, this work was inspired by the work of the <a href="#Google8888">Google Public DNS</a> <cite title="NONE">[Google8888]</cite> service.  </p>
+<p id="rfc.section.5.p.1">This work is based on the privacy needs of the <a href="#Cloudflare1111">Cloudflare's 1.1.1.1 Resolver</a> <cite title="NONE">[Cloudflare1111]</cite> operated by <a href="#Cloudflare">Cloudflare</a> <cite title="NONE">[Cloudflare]</cite>.  In addition, this work was inspired by the work of the <a href="#Google8888">Google Public DNS</a> <cite title="NONE">[Google8888]</cite> service and their struggles with ECS.  </p>
 <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#IANA" id="IANA">IANA Considerations</a></h1>
 <p id="rfc.section.6.p.1">Because this draft defines a new IPv6 block, this document includes a request to IANA.  </p>
 <p id="rfc.section.6.p.2">The 0053::/16 block is requested from IANA (or IETF?) from the 0000::/8 block which is maintained at <span>&lt;</span><a href="https://www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml">https://www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml</a><span>&gt;</span> and reserved for IETF usage.  </p>
