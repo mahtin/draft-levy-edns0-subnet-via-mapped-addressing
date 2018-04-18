@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+ <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+ <!ENTITY RFC6177 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6177.xml">
+ <!ENTITY RFC7871 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7871.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc category="std" docName="draft-levy-edns0-subnet-via-mapped-addressing-00" ipr="trust200902">
+ <front>
+   <title abbrev="ECS Mapped Address">EDNS0 Client Subnet Via Mapped Addressing</title>
+
+   <author fullname="Martin J. Levy" initials="M.J." surname="Levy">
+     <organization>Cloudflare, Inc.</organization>
+     <address>
+       <postal>
+         <street>101 Townsend Street</street>
+         <city>San Francisco</city>
+         <region>California</region>
+         <code>94107</code>
+         <country>US</country>
+       </postal>
+       <phone>+1 650 319 8939</phone>
+       <email>martin@cloudflare.com</email>
+     </address>
+   </author>
+
+   <date year="2018" />
+
+   <area>Applications</area>
+
+   <workgroup>Internet Engineering Task Force</workgroup>
+
+   <keyword>DNS, EDNS0, Client Subnet</keyword>
+
+   <abstract>
+     <t>
+This document proposes a new optional mapping for the ADDRESS field in an EDNS0 Client Subnet (ECS).
+     </t>
+
+     <t>
+Presently <xref target="RFC7871"/> simply states:
+"To protect users' privacy, Recursive Resolvers are strongly
+encouraged to conceal part of the user's IP address by truncating
+IPv4 addresses to 24 bits. 56 bits are recommended for IPv6, based on
+RFC6177."
+     </t>
+
+     <t>
+This RFC proposes that an IPv6 block is allocated and within that block a fixed mapping is published
+that maps geography to an IPv6 address.
+The resolver then send this new IPv6 address within the ADDRESS field of an existing ECS record.
+     </t>
+
+     <t>
+No new EDNS0 record type is created.
+     </t>
+
+   </abstract>
+ </front>
+
+ <middle>
+
+   <section title="Introduction">
+
+     <t>
+In <xref target="RFC7871"/>, the EDNS0 Client Subnet (ECS) method roughly exposes the clients network address by using a /24 or /56 mask.
+The ADDRESS field still contains a routable portion of the clients IP address; hence, some privacy information is somewhat exposed.
+For IPv6-enabled clients, it may still be a one-to-one mapping, even with a /56 mask. See <xref target="RFC6177"/>.
+     </t>
+
+     <t>
+Without changing the ECS protcol or it's operational usage, it's possible to provide the client far more privacy by mapping the users geography
+to a fresh IP address (an IPv6 address that's not routed globally) which is then placed in the ADDRESS field within ann ECS message.
+     </t>
+
+     <t>
+The mapping should be published and agreed too ahead of time.
+     </t>
+
+     <section title="Requirements Language">
+       <t>
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+interpreted as described in <xref target="RFC2119">RFC 2119</xref>.
+       </t>
+     </section>
+
+    </section>
+
+    <section title="The existing EDNS0 Client Subnet" anchor="ecs">
+     <t>
+Blah Blah ... describe how this works today.
+     </t>
+   </section>
+
+    <section title="The masked EDNS0 Client Subnet" anchor="ecs-masked">
+     <t>
+We propose to ...
+blah blah blah
+... map IPs based on client.
+New IP address is based on geolocation codes (<xref target="UNLOC">UNLOC</xref>, <xref target="IATA">IATA codes</xref>,
+or some other method.
+     </t>
+
+   </section>
+
+   <section title="Examples">
+     <t>
+The ADDRESS field would be mapped from the client's IP address via a geocoded module.
+     </t>
+
+      <figure align="center" anchor="ecs-example-2">
+        <artwork align="left"><![CDATA[
++------+------+------+------+------+------+
+| 0053 | #### | #### | #### | #### | #### |
++------+------+------+------+------+------+ ]]></artwork>
+        <postamble>An ADDRESS field created from a fixed geolocation database.</postamble>
+      </figure>
+
+     <t>
+The ADDRESS field would be a /56 in order to be compatible with <xref target="RFC7871"/>.
+     </t>
+
+<texttable align="left" suppress-title="true" anchor="iata.mapping.table">
+   <ttcol>Client IP</ttcol>
+   <ttcol>IATA</ttcol>
+   <ttcol>Notes</ttcol>
+
+   <c>66.249.64.###</c>
+   <c>WVI</c>
+   <c></c>
+
+   <c>2601:647:cd00:7a##:...:####</c>
+   <c>WVI</c>
+   <c>Both IPv4 and IPv6 map towards IPv6</c>
+
+   <c>50.193.228.###</c>
+   <c>LIT</c>
+   <c></c>
+
+   <c>71.191.91..###</c>
+   <c>BWI</c>
+   <c></c>
+
+</texttable>
+
+<texttable align="left" suppress-title="true" anchor="ipv6.mapping.table">
+   <ttcol>IATA</ttcol>
+   <ttcol>Mapped IP</ttcol>
+   <ttcol>Notes</ttcol>
+
+   <c>ABQ</c>
+   <c>53:0000:0000:0100</c>
+   <c></c>
+
+   <c>BWI</c>
+   <c>53:0000:0000:0200</c>
+   <c></c>
+
+   <c>LIT</c>
+   <c>53:0000:0000:0300</c>
+   <c></c>
+
+   <c>...</c>
+   <c>...</c>
+   <c></c>
+
+   <c>WVI</c>
+   <c>53:0000:0000:9900</c>
+   <c></c>
+
+</texttable>
+
+     <t>
+Using an IPv6 address (which is not routed and has many bits to play with) is simply a way
+of allowing existing ECS software to continue to operate without new protocols being created (or implemented).
+     </t>
+
+   </section>
+
+   <section title="Acknowledgements" anchor="Acknowledgements">
+     <t>
+This work is based on the privacy needs of the <xref target="Cloudflare1111">Cloudflare's 1.1.1.1 Resolver</xref>
+operated by <xref target="Cloudflare">Cloudflare</xref>.
+In addition, this work was inspired by the work of the <xref target="Google8888">Google Public DNS</xref> service.
+     </t>
+
+   </section>
+
+   <section title="IANA Considerations" anchor="IANA">
+
+     <t>
+Because this draft defines a new IPv6 block, this document includes a request to IANA.
+     </t>
+
+     <t>
+The 0053::/16 block is requested from IANA (or IETF?) from the 0000::/8 block which is
+maintained at <eref target="https://www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml"/>
+and reserved for IETF usage.
+     </t>
+
+     <t>
+This block will not be routed. It is used to hold 128 bits of information.
+     </t>
+
+   </section>
+
+   <section title="Security Considerations" anchor="Security">
+     <t>
+This proposal, by its very nature, exposes the existence and general geography of a source client;
+however, not the actual client IP or their subnet.
+     </t>
+   </section>
+
+ </middle>
+
+ <back>
+   <references title="Normative References">
+     <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
+     &RFC2119;
+     &RFC6177;
+     &RFC7871;
+
+   </references>
+
+   <references title="Informative References">
+
+     <reference anchor="UNLOC" target="http://www.unece.org/cefact/locode/welcome.html">
+       <front>
+         <title>United Nations Code for Trade and Transport Locations (UN/LOCODE)</title>
+         <author>
+           <organization>United Nations Economic Commission for Europe (UNECE)</organization>
+         </author>
+         <date year="2018" />
+       </front>
+     </reference>
+
+     <reference anchor="IATA" target="https://en.wikipedia.org/wiki/List_of_airports_by_IATA_code">
+       <front>
+         <title>List of airports by IATA code/</title>
+         <author>
+           <organization>Wikipedia</organization>
+         </author>
+         <date year="2018" />
+       </front>
+     </reference>
+
+     <reference anchor="Cloudflare1111" target="https://1.1.1.1/">
+       <front>
+         <title>DNS Resolver 1.1.1.1</title>
+         <author>
+           <organization>Cloudflare, Inc.</organization>
+         </author>
+         <date year="2018" />
+       </front>
+     </reference>
+
+     <reference anchor="Google8888" target="https://developers.google.com/speed/public-dns/">
+       <front>
+         <title>Google Public DNS</title>
+         <author>
+           <organization>Google</organization>
+         </author>
+         <date year="2018" />
+       </front>
+     </reference>
+
+     <reference anchor="Cloudflare" target="https://cloudflare.com/">
+       <front>
+         <title>Cloudflare, Inc.</title>
+         <author>
+           <organization>Cloudflare, Inc.</organization>
+         </author>
+         <date year="2018" />
+       </front>
+     </reference>
+
+   </references>
+
+   <!-- Change Log
+v00 2018-04-18  MJL   Initial text
+    -->
+
+ </back>
+</rfc>

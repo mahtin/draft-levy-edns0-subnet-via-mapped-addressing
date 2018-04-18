@@ -1,0 +1,280 @@
+
+
+
+
+Internet Engineering Task Force                                  M. Levy
+Internet-Draft                                          Cloudflare, Inc.
+Intended status: Standards Track                          April 18, 2018
+Expires: October 20, 2018
+
+
+               EDNS0 Client Subnet Via Mapped Addressing
+            draft-levy-edns0-subnet-via-mapped-addressing-00
+
+Abstract
+
+   This document proposes a new optional mapping for the ADDRESS field
+   in an EDNS0 Client Subnet (ECS).
+
+   Presently [RFC7871] simply states: "To protect users' privacy,
+   Recursive Resolvers are strongly encouraged to conceal part of the
+   user's IP address by truncating IPv4 addresses to 24 bits. 56 bits
+   are recommended for IPv6, based on RFC6177."
+
+   This RFC proposes that an IPv6 block is allocated and within that
+   block a fixed mapping is published that maps geography to an IPv6
+   address.  The resolver then send this new IPv6 address within the
+   ADDRESS field of an existing ECS record.
+
+   No new EDNS0 record type is created.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on October 20, 2018.
+
+Copyright Notice
+
+   Copyright (c) 2018 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 1]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Requirements Language . . . . . . . . . . . . . . . . . .   2
+   2.  The existing EDNS0 Client Subnet  . . . . . . . . . . . . . .   3
+   3.  The masked EDNS0 Client Subnet  . . . . . . . . . . . . . . .   3
+   4.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   5.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   4
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   4
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   4
+     8.2.  Informative References  . . . . . . . . . . . . . . . . .   5
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   5
+
+1.  Introduction
+
+   In [RFC7871], the EDNS0 Client Subnet (ECS) method roughly exposes
+   the clients network address by using a /24 or /56 mask.  The ADDRESS
+   field still contains a routable portion of the clients IP address;
+   hence, some privacy information is somewhat exposed.  For
+   IPv6-enabled clients, it may still be a one-to-one mapping, even with
+   a /56 mask.  See [RFC6177].
+
+   Without changing the ECS protcol or it's operational usage, it's
+   possible to provide the client far more privacy by mapping the users
+   geography to a fresh IP address (an IPv6 address that's not routed
+   globally) which is then placed in the ADDRESS field within ann ECS
+   message.
+
+   The mapping should be published and agreed too ahead of time.
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 2]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
+2.  The existing EDNS0 Client Subnet
+
+   Blah Blah ... describe how this works today.
+
+3.  The masked EDNS0 Client Subnet
+
+   We propose to ...  blah blah blah ... map IPs based on client.  New
+   IP address is based on geolocation codes (UNLOC [UNLOC], IATA codes
+   [IATA], or some other method.
+
+4.  Examples
+
+   The ADDRESS field would be mapped from the client's IP address via a
+   geocoded module.
+
+   +------+------+------+------+------+------+
+   | 0053 | #### | #### | #### | #### | #### |
+   +------+------+------+------+------+------+
+
+        An ADDRESS field created from a fixed geolocation database.
+
+                                 Figure 1
+
+   The ADDRESS field would be a /56 in order to be compatible with
+   [RFC7871].
+
+   +-----------------------------+------+------------------------------+
+   | Client IP                   | IATA | Notes                        |
+   +-----------------------------+------+------------------------------+
+   | 66.249.64.###               | WVI  |                              |
+   | 2601:647:cd00:7a##:...:#### | WVI  | Both IPv4 and IPv6 map       |
+   |                             |      | towards IPv6                 |
+   | 50.193.228.###              | LIT  |                              |
+   | 71.191.91..###              | BWI  |                              |
+   +-----------------------------+------+------------------------------+
+
+   +------+-------------------+-------+
+   | IATA | Mapped IP         | Notes |
+   +------+-------------------+-------+
+   | ABQ  | 53:0000:0000:0100 |       |
+   | BWI  | 53:0000:0000:0200 |       |
+   | LIT  | 53:0000:0000:0300 |       |
+   | ...  | ...               |       |
+   | WVI  | 53:0000:0000:9900 |       |
+   +------+-------------------+-------+
+
+
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 3]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
+   Using an IPv6 address (which is not routed and has many bits to play
+   with) is simply a way of allowing existing ECS software to continue
+   to operate without new protocols being created (or implemented).
+
+5.  Acknowledgements
+
+   This work is based on the privacy needs of the Cloudflare's 1.1.1.1
+   Resolver [Cloudflare1111] operated by Cloudflare [Cloudflare].  In
+   addition, this work was inspired by the work of the Google Public DNS
+   [Google8888] service.
+
+6.  IANA Considerations
+
+   Because this draft defines a new IPv6 block, this document includes a
+   request to IANA.
+
+   The 0053::/16 block is requested from IANA (or IETF?) from the
+   0000::/8 block which is maintained at
+   <https://www.iana.org/assignments/ipv6-address-space/ipv6-address-
+   space.xhtml> and reserved for IETF usage.
+
+   This block will not be routed.  It is used to hold 128 bits of
+   information.
+
+7.  Security Considerations
+
+   This proposal, by its very nature, exposes the existence and general
+   geography of a source client; however, not the actual client IP or
+   their subnet.
+
+8.  References
+
+8.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <http://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC6177]  Narten, T., Huston, G., and L. Roberts, "IPv6 Address
+              Assignment to End Sites", BCP 157, RFC 6177,
+              DOI 10.17487/RFC6177, March 2011, <https://www.rfc-
+              editor.org/info/rfc6177>.
+
+   [RFC7871]  Contavalli, C., van der Gaast, W., Lawrence, D., and W.
+              Kumari, "Client Subnet in DNS Queries", RFC 7871,
+              DOI 10.17487/RFC7871, May 2016, <https://www.rfc-
+              editor.org/info/rfc7871>.
+
+
+
+Levy                    Expires October 20, 2018                [Page 4]
+
+Internet-Draft             ECS Mapped Address                 April 2018
+
+
+8.2.  Informative References
+
+   [Cloudflare]
+              Cloudflare, Inc., "Cloudflare, Inc.", 2018,
+              <https://cloudflare.com/>.
+
+   [Cloudflare1111]
+              Cloudflare, Inc., "DNS Resolver 1.1.1.1", 2018,
+              <https://1.1.1.1/>.
+
+   [Google8888]
+              Google, "Google Public DNS", 2018,
+              <https://developers.google.com/speed/public-dns/>.
+
+   [IATA]     Wikipedia, "List of airports by IATA code/", 2018,
+              <https://en.wikipedia.org/wiki/
+              List_of_airports_by_IATA_code>.
+
+   [UNLOC]    United Nations Economic Commission for Europe (UNECE),
+              "United Nations Code for Trade and Transport Locations
+              (UN/LOCODE)", 2018,
+              <http://www.unece.org/cefact/locode/welcome.html>.
+
+Author's Address
+
+   Martin J. Levy
+   Cloudflare, Inc.
+   101 Townsend Street
+   San Francisco, California  94107
+   US
+
+   Phone: +1 650 319 8939
+   Email: martin@cloudflare.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Levy                    Expires October 20, 2018                [Page 5]
