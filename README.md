@@ -16,14 +16,8 @@ a DNS resolver should truncate the clients IP address.
 > IPv4 addresses to 24 bits. 56 bits are recommended for IPv6, based on
 > [RFC6177].
 
-This proposal allocates an IPv6 /32 block and publishes a geographic mapping
-of the client IP address into a pre-defined IPv6 address within that /32 block.
-
-## Examples
-
-`Server-ID: JFK`
-
-`Server-ID: 2334677359553192-SIN`
+This proposal allocates an IPv6 block and publishes a geographic mapping
+of the client IP address into a pre-defined IPv6 address within that block.
 
 ## building txt and html files
 
